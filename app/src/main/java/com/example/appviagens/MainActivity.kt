@@ -5,202 +5,421 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf // IMPORTAÇÃO ADICIONADA
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+
+data class RelatorioViagem(
+    val data: String,
+    val consumoMedio: String,
+    val custoTotal: String
+)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             MaterialTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                App()
+            }
+        }
+    }
+}
+
+@Composable
+fun App() {
+
+    val navController = rememberNavController()
+
+    val relatorios = remember {
+        mutableStateListOf<RelatorioViagem>()
+    }
+
+    NavHost(
+        navController = navController,
+        startDestination = "cadastro"
+    ) {
+
+        composable("cadastro") {
+
+            TelaCadastro(
+                onCriarViagem = { viagem ->
+                    relatorios.add(viagem)
+                },
+                onVerHistorico = {
+                    navController.navigate("historico")
+                }
+            )
+        }
+
+        composable("historico") {
+
+            TelaHistorico(
+                relatorios = relatorios,
+                onVoltar = {
+                    navController.popBackStack()
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun TelaCadastro(
+    onCriarViagem: (RelatorioViagem) -> Unit,
+    onVerHistorico: () -> Unit
+) {
+
+    var dataViagem by remember {
+        mutableStateOf("")
+    }
+
+    var kmInicial by remember {
+        mutableStateOf("")
+    }
+
+    var kmFinal by remember {
+        mutableStateOf("")
+    }
+
+    var litros by remember {
+        mutableStateOf("")
+    }
+
+    var combustivel by remember {
+        mutableStateOf("")
+    }
+
+    var pedagio by remember {
+        mutableStateOf("")
+    }
+
+    var valor by remember {
+        mutableStateOf("")
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("Controle de Viagens")
+                }
+            )
+        }
+    ) { paddingValues ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top
+        ) {
+
+            OutlinedTextField(
+                value = dataViagem,
+                onValueChange = {
+                    dataViagem = it
+                },
+                label = {
+                    Text("Data da viagem")
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            OutlinedTextField(
+                value = kmInicial,
+                onValueChange = {
+                    kmInicial = it
+                },
+                label = {
+                    Text("KM inicial")
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            OutlinedTextField(
+                value = kmFinal,
+                onValueChange = {
+                    kmFinal = it
+                },
+                label = {
+                    Text("KM final")
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            OutlinedTextField(
+                value = litros,
+                onValueChange = {
+                    litros = it
+                },
+                label = {
+                    Text("Litros")
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            OutlinedTextField(
+                value = combustivel,
+                onValueChange = {
+                    combustivel = it
+                },
+                label = {
+                    Text("Combustível")
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            OutlinedTextField(
+                value = pedagio,
+                onValueChange = {
+                    pedagio = it
+                },
+                label = {
+                    Text("Pedágio")
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            OutlinedTextField(
+                value = valor,
+                onValueChange = {
+                    valor = it
+                },
+                label = {
+                    Text("Valor do combustível")
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+
+            Button(
+                onClick = {
+
+                    val viagem = criarViagem(
+                        data = dataViagem,
+                        kmInicial = kmInicial,
+                        kmFinal = kmFinal,
+                        litros = litros,
+                        combustivel = combustivel,
+                        pedagio = pedagio,
+                        valor = valor
+                    )
+
+                    if (viagem != null) {
+                        onCriarViagem(viagem)
+
+                        dataViagem = ""
+                        kmInicial = ""
+                        kmFinal = ""
+                        litros = ""
+                        combustivel = ""
+                        pedagio = ""
+                        valor = ""
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Criar viagem")
+            }
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            Button(
+                onClick = {
+                    onVerHistorico()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Ver histórico")
+            }
+        }
+    }
+}
+
+@Composable
+fun TelaHistorico(
+    relatorios: List<RelatorioViagem>,
+    onVoltar: () -> Unit
+) {
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("Histórico de Viagens")
+                }
+            )
+        }
+    ) { paddingValues ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
+
+            Button(
+                onClick = {
+                    onVoltar()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Voltar")
+            }
+
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+
+            if (relatorios.isEmpty()) {
+
+                Text(
+                    text = "Nenhuma viagem cadastrada."
+                )
+
+            } else {
+
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    App()
+
+                    items(relatorios) { viagem ->
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+
+                                Text(
+                                    text = "Data: ${viagem.data}",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+
+                                Spacer(
+                                    modifier = Modifier.height(4.dp)
+                                )
+
+                                Text(
+                                    text = "Consumo médio: ${viagem.consumoMedio}"
+                                )
+
+                                Text(
+                                    text = "Custo total: ${viagem.custoTotal}"
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-data class RelatorioViagem(val data: String, val consumoMedio: String, val custoTotal: String)
+fun criarViagem(
+    data: String,
+    kmInicial: String,
+    kmFinal: String,
+    litros: String,
+    combustivel: String,
+    pedagio: String,
+    valor: String
+): RelatorioViagem? {
 
-@Composable
-fun App(modifier: Modifier = Modifier) {
-    var dataViagem by remember { mutableStateOf("") }
-    var kmInicial by remember { mutableStateOf("") }
-    var kmFinal by remember { mutableStateOf("") }
-    var litros by remember { mutableStateOf("") }
-    var combustivel by remember { mutableStateOf("") }
-    var pedagio by remember { mutableStateOf("") }
-    var valor by remember { mutableStateOf("") }
+    return try {
 
-    var resultado by remember { mutableStateOf<RelatorioViagem?>(null) }
-    // Corrigido: Agora o mutableStateListOf está importado corretamente
-    val listaDeResultados = remember { mutableStateListOf<RelatorioViagem>() }
+        val kmI = kmInicial.toDouble()
+        val kmF = kmFinal.toDouble()
+        val litrosUsados = litros.toDouble()
+        val precoCombustivel = valor.toDouble()
+        val valorPedagio = pedagio.toDouble()
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = "Bem vindo ao Sistema de Viagens Android!",
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
+        val distancia = kmF - kmI
 
-        OutlinedTextField(
-            value = dataViagem,
-            onValueChange = { dataViagem = it },
-            label = { Text("Digite a data") },
-            placeholder = { Text("15/10/2026") }
-        )
-
-        OutlinedTextField(
-            value = kmInicial,
-            onValueChange = { kmInicial = it },
-            label = { Text("Digite a kilometragem inicial") },
-            placeholder = { Text("15") }
-        )
-
-        OutlinedTextField(
-            value = kmFinal,
-            onValueChange = { kmFinal = it },
-            label = { Text("Digite a kilometragem final") },
-            placeholder = { Text("60") }
-        )
-
-        OutlinedTextField(
-            value = litros,
-            onValueChange = { litros = it },
-            label = { Text("Digite os litros") },
-            placeholder = { Text("15") }
-        )
-
-        OutlinedTextField(
-            value = combustivel,
-            onValueChange = { combustivel = it },
-            label = { Text("Digite o valor do combustivel por L") },
-            placeholder = { Text("6.55") }
-        )
-
-        OutlinedTextField(
-            value = pedagio,
-            onValueChange = { pedagio = it },
-            label = { Text("Digite o valor do pedagio") },
-            placeholder = { Text("33.88") }
-        )
-
-        OutlinedTextField(
-            value = valor,
-            onValueChange = { valor = it },
-            label = { Text("Digite o valor que gastou na viagem") },
-            placeholder = { Text("2567.99") }
-        )
-
-        Button(
-            onClick = {
-                // Geramos o relatório chamando a função de cálculo
-                val novoRelatorio = criarViagem(
-                    data = dataViagem,
-                    kmIni = kmInicial,
-                    kmFin = kmFinal,
-                    litrosGastos = litros,
-                    precoCombustivel = combustivel,
-                    valorPedagio = pedagio,
-                    valorTotal = valor
-                )
-
-                resultado = novoRelatorio
-                listaDeResultados.add(novoRelatorio) // Corrigido: .add() insere na lista do Compose
-
-                // Limpa os campos
-                dataViagem = ""
-                kmInicial = ""
-                kmFinal = ""
-                litros = ""
-                combustivel = ""
-                pedagio = ""
-                valor = ""
-            }
-        ) {
-            Text("Cadastrar viagem")
+        if (distancia <= 0 || litrosUsados <= 0) {
+            return null
         }
 
-        // Informações da última viagem cadastrada
-        resultado?.let { (data, consumo, custo) ->
-            Text("📅 Data da viagem: $data")
-            Text("⛽ Consumo calculado: $consumo")
-            Text("💵 Custo total viagem: $custo")
-        }
+        val consumoMedio = distancia / litrosUsados
 
-        // OPCIONAL: Se quiser mostrar o histórico de todas as viagens salvas na lista
-        if (listaDeResultados.isNotEmpty()) {
-            Text(
-                text = "Histórico de Viagens (${listaDeResultados.size})",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 16.dp)
+        val custoCombustivel = litrosUsados * precoCombustivel
+
+        val totalViagem = custoCombustivel + valorPedagio
+
+        RelatorioViagem(
+            data = data,
+            consumoMedio = String.format(
+                "%.2f km/L",
+                consumoMedio
+            ),
+            custoTotal = String.format(
+                "R$ %.2f",
+                totalViagem
             )
-            listaDeResultados.forEach { viagem ->
-                Text("• ${viagem.data} | Consumo: ${viagem.consumoMedio} | Total: R$ ${viagem.custoTotal}")
-            }
-        }
+        )
+
+    } catch (e: NumberFormatException) {
+
+        null
     }
 }
 
-// Corrigido: Modificado para ser uma função pura de cálculo (sem mexer na lista diretamente)
-fun criarViagem(
-    data: String,
-    kmIni: String,
-    kmFin: String,
-    litrosGastos: String,
-    precoCombustivel: String,
-    valorPedagio: String,
-    valorTotal: String
-): RelatorioViagem {
-    val kmI = kmIni.toDoubleOrNull() ?: 0.0
-    val kmF = kmFin.toDoubleOrNull() ?: 0.0
-    val precoComb = precoCombustivel.toDoubleOrNull() ?: 0.0
-    val total = valorTotal.toDoubleOrNull() ?: 0.0
-    val pedagio = valorPedagio.toDoubleOrNull() ?: 0.0 // Corrigido para evitar crash se estiver vazio
-
-    val distancia = kmF - kmI
-    val consumoMedio = distancia * precoComb
-    val totalViagem = total + consumoMedio + pedagio
-
-    return RelatorioViagem(
-        data = data,
-        consumoMedio = String.format("%.2f", consumoMedio),
-        custoTotal = String.format("%.2f", totalViagem)
-    )
-}
-
-@Preview(showBackground = true, name = "Visualização Padrão")
-@Composable
-fun AppPreview() {
-    App()
-}
+// implementation("androidx.navigation:navigation-compose:2.9.4")
