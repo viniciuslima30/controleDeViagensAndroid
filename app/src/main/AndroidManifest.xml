@@ -10,12 +10,21 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+<<<<<<< HEAD
         android:theme="@style/Theme.AppViagens">
+=======
+        android:theme="@style/Theme.ViagensTest">
+>>>>>>> master
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+<<<<<<< HEAD
             android:theme="@style/Theme.AppViagens">
+=======
+            android:theme="@style/Theme.ViagensTest"
+            android:windowSoftInputMode="adjustResize">
+>>>>>>> master
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
